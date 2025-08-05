@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="do_it_pandas-main">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/data/do_it_pandas-main.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

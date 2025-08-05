@@ -1,0 +1,54 @@
+From 84b8e76d7090bedfcb5ac512e61353310dded906 Mon Sep 17 00:00:00 2001
+From: 엄서 <nakrlove@gmail.com>
+Date: Thu, 26 Jun 2025 10:36:38 +0900
+Subject: python-std
+
+
+diff --git "a/20250626-(1,2)\352\265\220\354\213\234.py" "b/20250626-(1,2)\352\265\220\354\213\234.py"
+new file mode 100644
+index 0000000..550f209
+--- /dev/null
++++ "b/20250626-(1,2)\352\265\220\354\213\234.py"
+@@ -0,0 +1,41 @@
++import pandas as pd
++
++
++
++# 문제 
++# 1)아래와 같이 데이터프레임을 만들어 보세요
++#    이름  국어  영어
++# 0  철수  90  85
++# 1  영희  80  95
++# 2  민수  70  75
++df = pd.DataFrame([['철수',90,85],['영희',80,95],['민수',70,75]] ,  columns =['이름','국어','영어'])
++df
++
++
++# 2)국어,영어의 평균을 구하여 '평균' 칼럼을 추가해 주세요
++df["평균"] = (df["국어"]+df["영어"])/2
++
++df["평균"] = df[['국어', '영어']].mean(axis=1)
++df
++
++# df.sum(axis=1)
++
++# 2)국어가 90점 이상이면 'A', 80점 이상이면 'B', 나머지는  'C'로 등급을 매기는 새로운 칼럼
++#'국어등급'을 추가해 주세요
++# 방법 1
++import numpy as np
++df['국어등급'] = np.where(df['국어'] >= 90 , 'A',np.where(df['국어'] >= 80 , 'B','C'))
++df
++
++
++# 방법 2
++def jumsu(x):
++    return "A" if x >= 90 else "B" if x >= 80 else "C"
++
++
++df['국어'].apply(jumsu)           
++df['국어'].map(jumsu)        
++df[['국어','영어']].map(jumsu)  
++
++# 방법 3
++# pd.cut 
+\ No newline at end of file
