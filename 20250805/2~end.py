@@ -142,6 +142,11 @@ F1 = 2 × (Precision × Recall) /(Precision + Recall)
     = 2 x (0.33 X 0.25) / (0.33 + 0.25) 
     = 2 x 0.083 / 0.583
     = 0.2857
+    
+FP : Postive 라고 예측했는데 틀린것 :판사
+FN :Negative 라고 예측했는데 틀린것 :의사
+재현율 Recall    
+    
 """    
 #   위계산을 아래 함수로 대체함 
 accuracy_score(y_test,preds)    
