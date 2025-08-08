@@ -11,8 +11,8 @@ from sklearn.preprocessing import LabelEncoder ,OneHotEncoder
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 import matplotlib.pyplot as plt
-from sklearn.metrics import mean_squared_error , mean_absolute_error , r2_score,mean_squared_score
-from sklearn.datasets import load_iris,load_boston
+from sklearn.metrics import mean_squared_error , mean_absolute_error , r2_score
+from sklearn.datasets import load_iris
 #데이터셋 준비
 iris = load_iris()
 X = iris['data'] 
@@ -58,6 +58,8 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 iris = load_iris()
 X = iris['data'] 
 y = iris['target']
+
+# 상관관계 VIF값으로 보기 값제거 --- (1)
 variance_inflation_factor(X,0)
 variance_inflation_factor(X,1)
 variance_inflation_factor(X,2)
@@ -165,10 +167,13 @@ mean_squared_error(y_true, y_pred)
 
 
 
-
-
+# 상관관계 VIF값으로 보기 값제거 --- (1)
+import statsmodels.api as sm
+from statsmodels.stats.outliers_influence import variance_inflation_factor
 url ="https://gist.githubusercontent.com/nnbphuong/def91b5553736764e8e08f6255390f37/raw/373a856a3c9c1119e34b344de9230ae2ea89569d/BostonHousing.csv"
 df = pd.read_csv(url)
+
+"""
 df_train,df_test =  train_test_split(df, test_size=.3,random_state=1234)
 model = sm.OLS.from_formula("MEDV ~ (CRIM + ZN + INDUS + CHAS + NOX + RM + AGE)**2",data=df_train)
 
@@ -177,19 +182,35 @@ result.summary()
 
 y_pred = result.predict(df_test)
 mean_squared_error(df_test['species'], y_pred)
+"""
 
-
+# ======================================= #
+# 다중공선성 확인을 위한 임시저장              #
+# ======================================= #
 vif_data = pd.DataFrame()
 vif_data["Feature"] = df.columns
-vif_data["VIF"] = [variance_inflation_factor(data.values,i) for i in range(df.shape[1])]
+vif_data["VIF"] = [variance_inflation_factor(df.values,i) for i in range(df.shape[1])]
 
 
 X = df.iloc[:,[0,1,2,3,4,6,7,8,9,11]]
 y = df.iloc[:,[12]]
+poly = PolynomialFeatures(include_bias=False,interaction_only=True)
+X = poly.fit_transform(X)
 
+X_train , X_test, y_train,y_test = train_test_split(X,y, test_size=.3,random_state=1234)
 
+lr = LinearRegression()
+lr.fit(X_train,y_train)
 
+y_pred = lr.predict(X_test)
+y_true = y_test
+mean_squared_error(y_true,y_pred)
 
-
-사이킷런에서 이이리스 데이터를 가져와서 훈련세트 테스트 세트로 나누어서, 다중회귀분석을 하고
-교호작용을 고려하고, 다중공선성을 고려 최종테스트를 출력해주세요
+"""
+사이킷런에서 이이리스 데이터를 가져와 훈련세트 테스트 세트로 나눈다
+다중회귀분석
+교호작용 , 다중공선성을 고려한다
+변수선택은 양방향으로 한다.
+최종 MSE를 출력한다.
+statsmodels를 사용.
+"""
