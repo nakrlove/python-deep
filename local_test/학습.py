@@ -179,4 +179,6 @@ rg = Regression()
 
 # param = "MEDV ~ CRIM + ZN + INDUS + CHAS + NOX + RM + AGE + DIS + RAD + TAX + PTRATIO + LSTAT"
 param1 = "MEDV ~ (CRIM + ZN + INDUS + CHAS + NOX + RM + AGE)**2"
-rg.trainTestSplit(df ,param1)
+summary , res = rg.trainTestSplit(df ,param1)
+summary.summary()
+res

@@ -32,7 +32,7 @@ class Regression:
         result.summary()
         y_pred = result.predict(df_test)
 
-        return mean_squared_error(df_test['MEDV'], y_pred)
+        return result ,mean_squared_error(df_test['MEDV'], y_pred)
    
     def predict(self,X_test):
         return self.lr.predict(X_test)
