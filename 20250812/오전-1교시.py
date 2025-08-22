@@ -40,3 +40,7 @@ km.cluster_centers_
 len(km.labels_)
 #실루엣 갯수 구하는 함수
 silhouette_score(iris,km.labels_)
+
+
+plt.figure(figsize=(8,5))
+plt.plot(k_range, inertias, marker='o', linestyle='-')

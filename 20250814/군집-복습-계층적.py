@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 ############################ 계층적 군집 (Hierarchical Clustering) #############################
 # 데이터 생성
+# make_blobs는 **머신러닝 실습용 가짜 데이터(모의 데이터, synthetic data)**를 만드는 함수
 X, _ = make_blobs(n_samples=200, centers=3, cluster_std=0.7, random_state=42)
 
 # 계층적 군집
