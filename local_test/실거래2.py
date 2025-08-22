@@ -13,8 +13,28 @@ import numpy as np
 print("데이터를 불러오는 중입니다...")
 try:
     # 환경 내 파일 이름으로 CSV 파일 불러오기
-    apt_info = pd.read_csv("서울시_공동주택_아파트_정보(단지정보).csv", sep=';', encoding='utf-8')
-    apt_rent = pd.read_csv("아파트(전월세)_실거래가_all.csv", sep=';', encoding='utf-8', low_memory=False)
+    apt_info = pd.read_csv("C:\\Users\\Admin\\study01\\local_test\\서울시_공동주택_아파트_정보(단지정보).csv", sep=';', encoding='utf-8')
+    apt_rent = pd.read_csv("C:\\Users\\Admin\\study01\\local_test\\아파트(전월세)_실거래가_all.csv", sep=';', encoding='utf-8', low_memory=False)
+
+    # 2025년도 통계청 데이터를 불러옵니다.
+    # 사용자가 직접 첨부한 파일명과 컬럼명으로 수정해야 합니다.
+    # 여기서는 '서울시_통계데이터.csv'와 '자치구코드' 컬럼을 가정했습니다.
+    kosis_data = pd.read_csv('C:\\Users\\Admin\\study01\\local_test\\자치구 단위 서울 생활인구(내국인).csv', sep=',', encoding='utf-8')
+    
+    # 자치구 코드와 이름을 매핑하는 딕셔너리를 만듭니다.
+    # 실제 통계청 데이터의 코드를 확인하여 정확하게 입력해야 합니다.
+    gu_code_mapping = {
+        11010: '종로구', 11020: '중구', 11030: '용산구', 11040: '성동구', 11050: '광진구',
+        11060: '동대문구', 11070: '중랑구', 11080: '성북구', 11090: '강북구', 11100: '도봉구',
+        11110: '노원구', 11120: '은평구', 11130: '서대문구', 11140: '마포구', 11150: '양천구',
+        11160: '강서구', 11170: '구로구', 11180: '금천구', 11190: '영등포구', 11200: '동작구',
+        11210: '관악구', 11220: '서초구', 11230: '강남구', 11240: '송파구', 11250: '강동구'
+    }
+    
+    # '자치구코드' 컬럼을 사용하여 '자치구명' 컬럼을 새로 만듭니다.
+    # KOSIS 데이터에 '자치구코드' 컬럼이 있는 것을 가정합니다.
+    kosis_data['자치구명'] = kosis_data['자치구코드'].map(gu_code_mapping)
+
     print("데이터 불러오기 완료.")
 except FileNotFoundError as e:
     print(f"파일을 찾을 수 없습니다: {e.filename}")
@@ -41,7 +61,7 @@ apt_info.rename(columns={
 }, inplace=True)
 
 # 필요한 컬럼만 선택하고 결측치가 있는 행 제거
-apt_info_sel = apt_info[['단지명', '법정동', '세대수', '주차대수', '건축년도']].dropna()
+apt_info_sel = apt_info[['단지명', '시군구', '법정동', '세대수', '주차대수', '건축년도']].dropna()
 print("단지정보 데이터 전처리 완료.")
 
 
@@ -56,8 +76,7 @@ apt_rent_sel = apt_rent[['단지명', '전용면적(㎡)', '층', '보증금(만
 apt_rent_sel['보증금(만원)'] = apt_rent_sel['보증금(만원)'].astype(str).str.replace(',', '').astype(float)
 apt_rent_sel['월세금(만원)'] = apt_rent_sel['월세금(만원)'].astype(str).str.replace(',', '').astype(float)
 
-# '월세금'이 0인 경우를 전세로 간주하고, '보증금'이 0인 경우를 월세로 간주합니다.
-# 예측의 정확도를 높이기 위해 '전월세구분' 컬럼을 기준으로 데이터를 정리합니다.
+# 예측의 정확도를 높이기 위해 결측치가 있는 행 제거
 apt_rent_sel = apt_rent_sel.dropna(subset=['단지명', '전용면적(㎡)', '층', '보증금(만원)', '월세금(만원)', '계약년월'])
 
 print("전월세 실거래가 데이터 전처리 완료.")
@@ -67,11 +86,14 @@ print("전월세 실거래가 데이터 전처리 완료.")
 # 4. 데이터 병합 및 파생 변수 생성
 # -----------------------------
 print("데이터 병합 및 파생 변수 생성 중...")
-# 두 데이터프레임을 '단지명'을 기준으로 병합
-data = pd.merge(apt_rent_sel, apt_info_sel, on="단지명", how="left")
+# apt_info와 kosis_data를 '시군구'와 '자치구명'을 기준으로 병합
+data_with_kosis = pd.merge(apt_info_sel, kosis_data, left_on='시군구', right_on='자치구명', how='left')
 
-# 병합 후 단지정보 데이터가 없는 행 제거
-data = data.dropna(subset=["세대수", "주차대수", "건축년도"])
+# 두 데이터프레임을 '단지명'을 기준으로 최종 병합
+data = pd.merge(apt_rent_sel, data_with_kosis, on="단지명", how="left")
+
+# 병합 후 단지정보 및 통계 데이터가 없는 행 제거
+data = data.dropna(subset=["세대수", "주차대수", "건축년도", '인구수', '1인가구비율', '평균소득'])
 
 # '건축년도' 및 '계약년월' 데이터 타입 정리 및 파생 변수 생성
 data["건축년도"] = pd.to_datetime(data["건축년도"], errors="coerce").dt.year.astype(int)
@@ -97,10 +119,13 @@ encoded_df = pd.DataFrame(encoded, columns=encoder.get_feature_names_out(['법�
 data = pd.concat([data.reset_index(drop=True), encoded_df], axis=1)
 
 # 모델에 사용할 특성(Features)과 목표(Target) 변수 정의
-# '월세금(만원)'을 보증금 예측의 중요한 피처로 추가
+# '월세금(만원)' 및 KOSIS 데이터 변수들을 보증금 예측의 중요한 피처로 추가
 feature_cols = [
-    '전용면적(㎡)', '층', '건축연차', '평균층', '세대수', '주차대수', '전용면적대', '월세금(만원)'
+    '전용면적(㎡)', '층', '건축연차', '평균층', '세대수', '주차대수', '전용면적대', '월세금(만원)',
+    '인구수', '1인가구비율', '평균소득'
 ] + list(encoded_df.columns)
+
+feature_cols
 
 X = data[feature_cols]
 # '보증금(만원)'을 예측 목표로 설정. 로그 변환으로 데이터 편차 완화

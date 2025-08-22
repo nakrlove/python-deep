@@ -30,7 +30,7 @@ print("실거래가 컬럼:", apt_price.columns.tolist())
 # (실제 파일 컬럼명을 찾아 자동 매핑)
 # -----------------------------
 
-
+apt_info.info()
 apt_info["주소"] = (
     apt_info["시도"].astype(str) + " " +
     apt_info["시군구"].astype(str) + " " +
@@ -53,6 +53,7 @@ for col in apt_info.columns:
     elif "사용검사일-사용승인일" == col :
     # elif "사용승인" in col or "건축" in col:
         rename_info[col] = "건축년도"
+
 
 apt_info = apt_info.rename(columns=rename_info)
 apt_info.info()
@@ -94,13 +95,16 @@ apt_price_sel['거래월'] = apt_price_sel['계약년월'] % 100
 apt_info.info()
 print(apt_info.columns[apt_info.columns.duplicated()])
 
-# 병합
+
+######################################################################
+# 병합 (단지명 실거래 데이터 기준 및 준작업)
+######################################################################
 data = pd.merge(apt_price_sel, apt_info_sel, on="단지명", how="left")
+# from rich import print as pp
+# pp(data.info)
+# pp(data.columns)
 
-data.info()
-data.iloc[:,[-1]]
-
-
+data = data.iloc[:, :11]
 
 # 1. 건축년도 → datetime 변환
 data["건축년도"] = pd.to_datetime(data["건축년도"], errors="coerce")
@@ -118,6 +122,8 @@ data["건축년도"] = data["건축년도"].astype(int)
 data['건축연차'] = data['거래년도'] - data['건축년도']
 data['평균층'] = data['층'] / 30
 data['전용면적대'] = data['전용면적(㎡)'] // 10
+
+data.info()
 
 # -----------------------------
 # 6. 범주형 변수 인코딩 (법정동)
@@ -153,7 +159,8 @@ rf_model = RandomForestRegressor(n_estimators=200, max_depth=15, random_state=42
 rf_model.fit(X_train, y_train)
 
 y_pred = rf_model.predict(X_test)
-rmse = mean_squared_error(y_test, y_pred, squared=False)
+# rmse = mean_squared_error(y_test, y_pred, squared=False)
+rmse = mean_squared_error(y_test, y_pred)
 
 print(f"✅ 랜덤포레스트 RMSE: {rmse:.2f} 만원")
 

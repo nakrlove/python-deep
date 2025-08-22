@@ -11,52 +11,52 @@ import numpy as np
 # 1. 데이터 불러오기
 # -----------------------------
 print("데이터를 불러오는 중입니다...")
-try:
-    # '공동주택_아파트_정보' 파일을 제외하고 전월세 실거래가 데이터만 불러옵니다.
-    # 파일 인코딩을 'cp949'로 유지하고 오류가 발생할 경우 문자를 대체하도록 설정합니다.
-    apt_rent = pd.read_csv("C:\\Users\\Admin\\study01\\local_test\\아파트(전월세)_실거래가_all.csv", sep=';', encoding='cp949', errors='replace', low_memory=False)
-    
-    # 첨부된 통계청 데이터를 불러옵니다.
-    # 파일명과 구분자가 일치하는지 확인해 주세요.
-    # 인코딩을 'utf-8-sig'로 변경하여 헤더 파싱 오류를 해결합니다.
-    kosis_data = pd.read_csv("C:\\Users\\Admin\\study01\\local_test\\자치구 단위 서울 생활인구(내국인).csv", sep=',', encoding='utf-8-sig')
+# try:
+# '공동주택_아파트_정보' 파일을 제외하고 전월세 실거래가 데이터만 불러옵니다.
+# 파일 인코딩을 'cp949'로 유지하고 오류가 발생할 경우 문자를 대체하도록 설정합니다.
+apt_rent = pd.read_csv("C:\\Users\\Admin\\study01\\local_test\\아파트(전월세)_실거래가_all.csv", sep=';', encoding='utf-8', low_memory=False)
+apt_rent['자치구명'] = apt_rent['시군구'].str.extract(r'서울특별시\s*(\S+구)')
+# 첨부된 통계청 데이터를 불러옵니다.
+# 파일명과 구분자가 일치하는지 확인해 주세요.
+# 인코딩을 'utf-8-sig'로 변경하여 헤더 파싱 오류를 해결합니다.
+kosis_data = pd.read_csv("C:\\Users\\Admin\\study01\\local_test\\자치구 단위 서울 생활인구(내국인).csv", sep=',', encoding='utf-8-sig')
 
-    # 컬럼 이름의 앞뒤 공백을 제거하여 'KeyError'를 방지합니다.
-    kosis_data.columns = kosis_data.columns.str.strip()
-    
-    # 행정동코드의 앞 5자리를 추출하여 자치구코드로 사용합니다.
-    kosis_data['자치구코드'] = kosis_data['행정동코드'].astype(str).str[:5].astype(int)
+# 컬럼 이름의 앞뒤 공백을 제거하여 'KeyError'를 방지합니다.
+kosis_data.columns = kosis_data.columns.str.strip()
 
-    # 자치구 코드와 이름을 매핑하는 딕셔너리를 만듭니다.
-    gu_code_mapping = {
-        11010: '종로구', 11020: '중구', 11030: '용산구', 11040: '성동구', 11050: '광진구',
-        11060: '동대문구', 11070: '중랑구', 11080: '성북구', 11090: '강북구', 11100: '도봉구',
-        11110: '노원구', 11120: '은평구', 11130: '서대문구', 11140: '마포구', 11150: '양천구',
-        11160: '강서구', 11170: '구로구', 11180: '금천구', 11190: '영등포구', 11200: '동작구',
-        11210: '관악구', 11220: '서초구', 11230: '강남구', 11240: '송파구', 11250: '강동구'
-    }
-    kosis_data['자치구명'] = kosis_data['자치구코드'].map(gu_code_mapping)
+# 행정동코드의 앞 5자리를 추출하여 자치구코드로 사용합니다.
+kosis_data['자치구코드'] = kosis_data['자치구코드'].astype(str).str[:5].astype(int)
 
-    # 동일한 자치구 내의 모든 행정동 인구수를 합산합니다.
-    kosis_data = kosis_data.groupby('자치구명')['총생활인구수'].sum().reset_index()
-    kosis_data.rename(columns={'총생활인구수': '인구수'}, inplace=True)
-    kosis_data.set_index('자치구명', inplace=True)
+# 자치구 코드와 이름을 매핑하는 딕셔너리를 만듭니다.
+gu_code_mapping = {
+    11010: '종로구', 11020: '중구', 11030: '용산구', 11040: '성동구', 11050: '광진구',
+    11060: '동대문구', 11070: '중랑구', 11080: '성북구', 11090: '강북구', 11100: '도봉구',
+    11110: '노원구', 11120: '은평구', 11130: '서대문구', 11140: '마포구', 11150: '양천구',
+    11160: '강서구', 11170: '구로구', 11180: '금천구', 11190: '영등포구', 11200: '동작구',
+    11210: '관악구', 11220: '서초구', 11230: '강남구', 11240: '송파구', 11250: '강동구'
+}
+kosis_data['자치구명'] = kosis_data['자치구코드'].map(gu_code_mapping)
 
-    print("데이터 불러오기 완료.")
-except FileNotFoundError as e:
-    print(f"파일을 찾을 수 없습니다: {e.filename}")
-    exit()
+# 동일한 자치구 내의 모든 행정동 인구수를 합산합니다.
+kosis_data = kosis_data.groupby('자치구명')['총생활인구수'].sum().reset_index()
+kosis_data.rename(columns={'총생활인구수': '인구수'}, inplace=True)
+kosis_data.set_index('자치구명', inplace=True)
+
+print("데이터 불러오기 완료.")
+# except FileNotFoundError as e:
+#     print(f"파일을 찾을 수 없습니다: {e.filename}")
+#     exit()
 
 # -----------------------------
 # 2. 전월세 실거래가 데이터 전처리 및 거래량 집계
 # -----------------------------
 print("전월세 실거래가 데이터 전처리 및 거래량 집계 중...")
 # '시군구'와 '계약년월' 컬럼을 이용하여 월별 거래량을 계산합니다.
-apt_rent_sel = apt_rent[['시군구', '계약년월']].copy()
+apt_rent_sel = apt_rent[['자치구명','시군구', '계약년월']].copy()
 apt_rent_sel['계약년월'] = pd.to_datetime(apt_rent_sel['계약년월'].astype(str), format='%Y%m')
 
 # '시군구'와 '계약년월' 기준으로 그룹화하여 거래 건수를 집계합니다.
-monthly_transactions = apt_rent_sel.groupby(['시군구', '계약년월']).size().reset_index(name='거래량')
+monthly_transactions = apt_rent_sel.groupby(['자치구명','시군구', '계약년월']).size().reset_index(name='거래량')
 
 print("전월세 실거래가 거래량 집계 완료.")
 
@@ -66,8 +66,8 @@ print("전월세 실거래가 거래량 집계 완료.")
 # -----------------------------
 print("데이터 병합 중...")
 # 월별 거래량 데이터와 KOSIS 데이터를 '시군구'와 '자치구명'을 기준으로 병합합니다.
-merged_data = pd.merge(monthly_transactions, kosis_data, left_on='시군구', right_index=True, how='left')
-
+# merged_data = pd.merge(monthly_transactions, kosis_data, left_on='시군구', right_index=True, how='left')
+merged_data = pd.merge(monthly_transactions, kosis_data, left_on='자치구명', right_index=True, how='left')
 # KOSIS 데이터가 없는 경우를 대비해 결측치를 처리합니다.
 # 실제 데이터가 있다면 이 부분은 필요 없을 수 있습니다.
 merged_data.fillna(method='ffill', inplace=True)

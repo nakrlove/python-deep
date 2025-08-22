@@ -2,7 +2,7 @@ import pandas as pd
 import glob
 
 # 폴더 안에 있는 모든 CSV 파일 찾기
-csv_files = glob.glob("C:\\Users\\Admin\\study01\\local_test\\서울시_공동주택_아파트_정보(단지정보).csv")
+csv_files = glob.glob("C:\\Users\\Admin\\study01\\local_test\\서울시_공동주택_아파트_정보11.csv")
 
 for csv_file in csv_files:
     # 확장자만 xlsx로 바꾸기
