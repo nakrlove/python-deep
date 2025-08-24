@@ -55,19 +55,19 @@ print("테스트 데이터 개수:", len(X_test))
 
 import seaborn as sns
 import pandas as pd
-import numpy as py
+import numpy as np
 
 df = sns.load_dataset('penguins')
 df.describe()
-
+df.isnull().sum()
 #결측치 제거
 df =df.dropna()
 
 df.info()
-X = df.iloc[:,2:6]
+X = df.iloc[:,2:5]
 y = df['species']
 
-#표준화
+
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier 
@@ -75,16 +75,30 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import SGDClassifier #확률적 경사하강법
 from sklearn.tree import DecisionTreeClassifier#결정 트리
 from sklearn.metrics import accuracy_score
+import matplotlib.pyplot as plt
+#표준화
 scaler = StandardScaler()
+X = scaler.fit_transform(X)
 
+# sns.scatterplot(x=X[:,0])
+# x = np.linspace(-3,3,333)
+
+# plt.figure(figsize=(8,5))
+# # plt.plot(X[:,0])
+# plt.scatter(x,X[:,0],color='blue',marker='o')
+# plt.title("Plot of the first Column")
+# plt.xlabel("Index")
+# plt.ylabel("Value")
+# plt.grid(True)
+# plt.show()
 
 #X_train, X_test,y_train, y_test = train_test_split( X,y, train_size=0.7 ,stratify=y
 X_train, X_test,y_train, y_test = train_test_split( X,y, train_size=0.8)
 #kn = LogisticRegression()
-#kn = KNeighborsClassifier()
+# kn = KNeighborsClassifier() 
 #kn = SGDClassifier(loss = 'log_loss')
-kn = SGDClassifier(loss = 'log_loss',max_iter=10) #max_iter 반복
-epoch = iteration #max_iter와 반복 
+# kn = SGDClassifier(loss = 'log_loss',max_iter=10) #max_iter 반복
+# epoch = iteration #max_iter와 반복 
 
 
 kn = DecisionTreeClassifier()
