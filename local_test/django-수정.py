@@ -28,15 +28,28 @@ def linear_regression_prediction():
     ##################################################
     # 1. 데이터 불러오기 및 전처리
     ##################################################
-    try:
-        df = FileUtils().getCsv("아파트(전월세)_실거래가_all.csv")
-    except FileNotFoundError as e:
-        print(f"파일을 찾을 수 없습니다: {e.filename}")
-        return {
-            "전세": [],
-            "월세": []
-        }
+    # try:
+    #     df = FileUtils().getCsv("아파트(전월세)_실거래가_all.csv")
+    # except FileNotFoundError as e:
+    #     print(f"파일을 찾을 수 없습니다: {e.filename}")
+    #     return {
+    #         "전세": [],
+    #         "월세": []
+    #     }
    
+    # 운영체제에 맞는 한글 폰트 설정
+    # Windows
+    plt.rcParams['font.family'] = 'Malgun Gothic'
+    # Mac OS
+    plt.rcParams['font.family'] = 'AppleGothic'
+
+    # 마이너스 부호 깨짐 방지
+    plt.rcParams['axes.unicode_minus'] = False
+    try:
+        df = pd.read_csv('/Users/nakrlove/Desktop/dev/python-deep/local_test/아파트(전월세)_실거래가_all.csv', encoding='utf-8', sep=';')
+    except UnicodeDecodeError:
+        df = pd.read_csv('/Users/nakrlove/Desktop/dev/python-deep/local_test/아파트(전월세)_실거래가_all.csv', encoding='euc-kr', sep=';')
+
     df['거래일'] = pd.to_datetime(df['계약년월'].astype(str) + df['계약일'].astype(str).str.zfill(2), format='%Y%m%d')
     bins = [0, 40, 60, 85, 100, 135, 200]
     labels = ['~40㎡', '40~60㎡', '60~85㎡', '85~100㎡', '100~135㎡', '135㎡~']
@@ -111,7 +124,8 @@ def linear_regression_prediction():
             plt.grid(True)
             
             image_filename = f"linear_regression_{rent_type}_{area_label}.png"
-            image_url = FileUtils().savePngToPath(image_filename)
+            # image_url = FileUtils().savePngToPath(image_filename)
+            image_url = "test/"
 
             # 요청된 형식으로 데이터 구조화
             area_result = {
@@ -156,7 +170,7 @@ def linear_regression_prediction():
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     
     # 최종 예측 이미지 저장 및 반환
-    final_image_url = FileUtils().savePngToPath("final_linear_regression.png")
+    # final_image_url = FileUtils().savePngToPath("final_linear_regression.png")
     
     return final_results
 
